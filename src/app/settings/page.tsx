@@ -20,7 +20,8 @@ import { usePin } from "@/components/PinContext";
 import { SERVICES } from "@/lib/services";
 
 export default function SettingsPage() {
-  const { pin, setPin, hasPin } = usePin();
+  const { pin: globalPin, setPin: setGlobalPin, hasPin: hasGlobalPin } = usePin();
+  const [localPin, setLocalPin] = useState("");
   const [tokens, setTokens] = useState<Record<string, string>>({});
   const [showPin, setShowPin] = useState(false);
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
@@ -45,6 +46,12 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
+    if (globalPin && !localPin) {
+      setLocalPin(globalPin);
+    }
+  }, [globalPin]); // Only sync once initially if context already has it
+
+  useEffect(() => {
     if (!lockoutUntil) return;
     const updateTimer = () => {
       const left = Math.max(0, lockoutUntil - Date.now());
@@ -61,12 +68,12 @@ export default function SettingsPage() {
   }, [lockoutUntil]);
 
   function handleCheckPin() {
-    if (!pin) {
+    if (!localPin) {
       toast.error("Introduce un PIN para comprobar.");
       return;
     }
     
-    const isValid = validatePin(pin);
+    const isValid = validatePin(localPin);
     if (isValid === null) {
       toast.info("Aún no hay un PIN guardado. Se configurará al guardar tu primer token.");
       return;
@@ -74,6 +81,7 @@ export default function SettingsPage() {
     
     if (isValid) {
       toast.success("¡El PIN es correcto!");
+      setGlobalPin(localPin);
       setFailedAttempts(0);
     } else {
       const newAttempts = failedAttempts + 1;
@@ -84,7 +92,7 @@ export default function SettingsPage() {
         setLockoutUntil(lockoutTime);
         localStorage.setItem("lf_pin_lockout", lockoutTime.toString());
         toast.error("Demasiados intentos fallidos. PIN bloqueado.");
-        setPin(""); // erase current input
+        setLocalPin(""); // erase current input
       } else {
         toast.error(`PIN incorrecto. Te quedan ${3 - newAttempts} intentos.`);
       }
@@ -97,11 +105,12 @@ export default function SettingsPage() {
       toast.error("El token no puede estar vacío.");
       return;
     }
-    if (!hasPin) {
+    if (!localPin) {
       toast.error("Introduce primero un PIN de sesión.");
       return;
     }
-    encryptAndStore(serviceId, token, pin);
+    encryptAndStore(serviceId, token, localPin);
+    setGlobalPin(localPin); // In case they set a NEW pin and saved immediately
     setTokens((prev) => ({ ...prev, [serviceId]: "" }));
     toast.success(`Token de ${serviceId} guardado de forma cifrada en tu navegador.`);
   }
@@ -149,8 +158,8 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-primary" />
             <CardTitle className="text-base">PIN de Sesión</CardTitle>
-            <Badge variant={hasPin ? "default" : "outline"} className="ml-auto text-xs">
-              {hasPin ? "Sesión activa" : "Sin PIN"}
+            <Badge variant={hasGlobalPin ? "default" : "outline"} className="ml-auto text-xs">
+              {hasGlobalPin ? "Sesión activa" : "Sin PIN"}
             </Badge>
           </div>
           <CardDescription className="text-xs">
@@ -165,8 +174,8 @@ export default function SettingsPage() {
                   id="session-pin"
                   type={showPin ? "text" : "password"}
                   placeholder="Escribe un PIN (mín. 4 caracteres)"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
+                  value={localPin}
+                  onChange={(e) => setLocalPin(e.target.value)}
                   className="pr-10 font-mono"
                   maxLength={32}
                   disabled={lockoutUntil !== null}
@@ -184,11 +193,14 @@ export default function SettingsPage() {
               <Button
                 variant="secondary"
                 onClick={handleCheckPin}
-                disabled={!pin || lockoutUntil !== null}
+                disabled={!localPin || lockoutUntil !== null}
               >
                 Comprobar PIN
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">
+              Este PIN se convertirá en la única llave para acceder a tus datos locales. Si ya tenías datos guardados, el nuevo PIN sustituirá al anterior.
+            </p>
             
             {isMounted && lockoutUntil !== null && (
               <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-md flex items-center gap-2">
@@ -305,9 +317,9 @@ export default function SettingsPage() {
                 <Button
                   size="sm"
                   onClick={() => handleSave(service.id)}
-                  disabled={!hasPin || !tokens[service.id]?.trim()}
+                  disabled={!localPin || !tokens[service.id]?.trim()}
                 >
-                  Cifrar y Guardar
+                  Actualizar Llave y Guardar
                 </Button>
               </CardFooter>
             </Card>

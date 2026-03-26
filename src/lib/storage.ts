@@ -24,11 +24,9 @@ export function encryptAndStore(
   apiKey: string,
   pin: string
 ): void {
-  // Initialize PIN validator if not already set
-  if (!localStorage.getItem(PIN_VALIDATOR_KEY)) {
-    const validatorCipher = CryptoJS.AES.encrypt(PIN_VALIDATOR_VALUE, pin).toString();
-    localStorage.setItem(PIN_VALIDATOR_KEY, validatorCipher);
-  }
+  // Initialize or update the PIN validator to match the current PIN
+  const validatorCipher = CryptoJS.AES.encrypt(PIN_VALIDATOR_VALUE, pin).toString();
+  localStorage.setItem(PIN_VALIDATOR_KEY, validatorCipher);
 
   const cipherText = CryptoJS.AES.encrypt(apiKey, pin).toString();
   localStorage.setItem(`${prefix}${service}`, cipherText);
