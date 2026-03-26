@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Shield, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePin } from "@/components/PinContext";
@@ -86,6 +87,14 @@ export function PinModal({ open }: { open: boolean }) {
     }
   }
 
+  function handleNuclearReset() {
+    localStorage.removeItem("lf_enc_vercel");
+    localStorage.removeItem("lf_pin_validator");
+    localStorage.removeItem("lf_pin_lockout");
+    setGlobalPin("");
+    window.location.href = "/settings";
+  }
+
   // Prevent closing by clicking outside to enforce security (must enter PIN to see dashboard)
   // The user can't interact with the background anyway, but if they want to manage tokens, they'd use settings. 
   // Wait, if they forgot the PIN they might want to go to Settings to reset the app? No, settings also requires the PIN to see the tokens, but they could delete them.
@@ -147,6 +156,29 @@ export function PinModal({ open }: { open: boolean }) {
           >
             Descifrar y Entrar
           </Button>
+          
+          <AlertDialog>
+            <AlertDialogTrigger className="w-full mt-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors py-2 rounded-md">
+              ¿Olvidaste tu PIN? Restablecer aplicación
+            </AlertDialogTrigger>
+            <AlertDialogContent className="sm:max-w-md bg-[#16191F] border-border rounded-[0.3rem]">
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Restablecer TierMate?</AlertDialogTitle>
+                <AlertDialogDescription className="font-mono text-muted-foreground mt-2 text-[11px] leading-relaxed">
+                  ¿Estás seguro? Esta acción borrará todos tus tokens guardados localmente. Al ser un sistema de privacidad absoluta, no podemos recuperar tus datos sin el PIN original.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-[0.3rem]">Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-[0.3rem]"
+                  onClick={handleNuclearReset}
+                >
+                  Sí, borrar todo
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </form>
       </DialogContent>
     </Dialog>
