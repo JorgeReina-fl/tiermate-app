@@ -249,20 +249,28 @@ export default function SettingsPage() {
                         <PopoverTrigger className="text-muted-foreground hover:text-foreground outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-full cursor-help">
                           <CircleHelp className="w-3.5 h-3.5" />
                         </PopoverTrigger>
-                        <PopoverContent className="w-80 text-xs shadow-lg border-border" side="right" align="start">
-                          <h4 className="font-semibold mb-2">¿Cómo obtener tu token?</h4>
+                        <PopoverContent className="w-96 text-xs shadow-lg border-border" side="right" align="start">
+                          <h4 className="font-semibold mb-2">Acceso a Vercel</h4>
                           <ol className="space-y-2.5">
                             <li className="flex items-start gap-2">
                               <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">1</span>
-                              <p className="text-muted-foreground leading-snug">Inicia sesión en cuenta de Vercel.</p>
+                              <p className="text-muted-foreground leading-snug"><strong>Abrir Menú:</strong> En tu dashboard de Vercel, pulsa en los tres puntos (<strong>...</strong>) situados abajo a la izquierda, junto a tu nombre de usuario.</p>
                             </li>
                             <li className="flex items-start gap-2">
                               <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">2</span>
-                              <p className="text-muted-foreground leading-snug">Abre <span className="font-mono bg-muted p-0.5 rounded">Ajustes &gt; Tokens</span> o pulsa el enlace debajo.</p>
+                              <p className="text-muted-foreground leading-snug"><strong>Ajustes:</strong> Haz clic en el icono del <strong>engranaje</strong> (Settings) que aparece al lado de tu usuario en el menú desplegable.</p>
                             </li>
                             <li className="flex items-start gap-2">
                               <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">3</span>
-                              <p className="text-muted-foreground leading-snug">Pulsa <strong>Create Token</strong> y cópialo aquí.</p>
+                              <p className="text-muted-foreground leading-snug"><strong>Tokens:</strong> En el nuevo menú lateral izquierdo, selecciona la opción '<strong>Tokens</strong>'.</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">4</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Crear:</strong> Pulsa en '<strong>Create</strong>', dale un nombre (ej. TierMate-Console) y elige el alcance (Scope).</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">5</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Acción Final:</strong> Copia el token, pégalo aquí y pulsa '<strong>Actualizar Llave y Guardar</strong>' para cifrarlo con tu PIN local.</p>
                             </li>
                           </ol>
                           <a
