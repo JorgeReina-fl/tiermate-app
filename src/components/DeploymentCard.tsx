@@ -69,7 +69,7 @@ export function DeploymentCard({ deployment }: { deployment: VercelDeployment })
   const message = deployment.meta?.githubCommitMessage;
 
   return (
-    <Card className="flex flex-col hover:shadow-md transition-shadow">
+    <Card className="flex flex-col hover:shadow-md transition-shadow rounded-[0.3rem]">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -128,7 +128,7 @@ export function DeploymentCard({ deployment }: { deployment: VercelDeployment })
 
 export function DeploymentCardSkeleton() {
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col rounded-[0.3rem]">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="space-y-2 flex-1">
@@ -146,5 +146,55 @@ export function DeploymentCardSkeleton() {
         <Skeleton className="h-3 w-1/4" />
       </CardFooter>
     </Card>
+  );
+}
+
+/* ── List Item component ─────────────────────────────────────── */
+
+export function DeploymentListItem({ deployment }: { deployment: VercelDeployment }) {
+  const state = deployment.state ?? "QUEUED";
+  const cfg = stateConfig[state] ?? stateConfig.QUEUED;
+  const branch = deployment.meta?.githubCommitRef ?? "–";
+  const url = `https://${deployment.url}`;
+
+  return (
+    <div className="flex items-center justify-between gap-4 py-3 px-4 bg-card border border-border rounded-[0.3rem] hover:bg-accent/50 transition-colors">
+      <div className="flex items-center gap-4 min-w-0">
+        <Badge variant={cfg.variant} className="shrink-0 flex items-center justify-center w-8 h-8 p-0 rounded-full" title={cfg.label}>
+          {cfg.icon}
+        </Badge>
+        <div className="flex flex-col min-w-0">
+          <p className="font-semibold text-sm truncate">{deployment.name}</p>
+          <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+            <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-[10px]">{branch}</code>
+            <span className="font-mono">{formatDate(deployment.createdAt)}</span>
+          </div>
+        </div>
+      </div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors p-2 rounded-md hover:bg-accent"
+        title="Abrir despliegue"
+      >
+        <ExternalLink className="w-4 h-4" />
+      </a>
+    </div>
+  );
+}
+
+export function DeploymentListItemSkeleton() {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3 px-4 bg-card border border-border rounded-[0.3rem]">
+      <div className="flex items-center gap-4 flex-1">
+        <Skeleton className="w-8 h-8 rounded-full shrink-0" />
+        <div className="space-y-2 flex-1">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-48" />
+        </div>
+      </div>
+      <Skeleton className="w-8 h-8 rounded-md shrink-0" />
+    </div>
   );
 }

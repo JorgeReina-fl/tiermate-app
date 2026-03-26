@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Shield, Eye, EyeOff, CheckCircle2, Trash2, ExternalLink, KeyRound, LogIn, Copy, AlertCircle, ShieldAlert } from "lucide-react";
+import { Shield, Eye, EyeOff, CheckCircle2, Trash2, ExternalLink, KeyRound, LogIn, Copy, AlertCircle, ShieldAlert, CircleHelp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { encryptAndStore, hasStoredKey, removeKey, validatePin } from "@/lib/storage";
 import { usePin } from "@/components/PinContext";
 import { SERVICES } from "@/lib/services";
@@ -229,9 +228,44 @@ export default function SettingsPage() {
 
               <CardContent className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor={`token-${service.id}`} className="text-xs">
-                    Access Token
-                  </Label>
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor={`token-${service.id}`} className="text-xs">
+                      Access Token
+                    </Label>
+                    {service.id === "vercel" && (
+                      <Popover>
+                        <PopoverTrigger className="text-muted-foreground hover:text-foreground outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-full cursor-help">
+                          <CircleHelp className="w-3.5 h-3.5" />
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 text-xs shadow-lg border-border" side="right" align="start">
+                          <h4 className="font-semibold mb-2">¿Cómo obtener tu token?</h4>
+                          <ol className="space-y-2.5">
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">1</span>
+                              <p className="text-muted-foreground leading-snug">Inicia sesión en cuenta de Vercel.</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">2</span>
+                              <p className="text-muted-foreground leading-snug">Abre <span className="font-mono bg-muted p-0.5 rounded">Ajustes &gt; Tokens</span> o pulsa el enlace debajo.</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">3</span>
+                              <p className="text-muted-foreground leading-snug">Pulsa <strong>Create Token</strong> y cópialo aquí.</p>
+                            </li>
+                          </ol>
+                          <a
+                            href="https://vercel.com/account/tokens"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 mt-3 font-medium text-primary hover:underline underline-offset-2"
+                          >
+                            Ir a vercel.com/account/tokens
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </div>
                   <div className="relative">
                     <Input
                       id={`token-${service.id}`}
@@ -255,62 +289,6 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </div>
-
-                {/* Guide accordion — only shown for Vercel */}
-                {service.id === "vercel" && (
-                  <Accordion className="w-full">
-                    <AccordionItem value="how-to-get-token" className="border-border">
-                      <AccordionTrigger className="text-xs text-muted-foreground hover:text-foreground py-2 hover:no-underline">
-                        <span className="flex items-center gap-1.5">
-                          <KeyRound className="w-3.5 h-3.5 shrink-0" />
-                          ¿Cómo obtengo mi Vercel Access Token?
-                        </span>
-                      </AccordionTrigger>
-                      <AccordionContent className="pb-2">
-                        <ol className="space-y-3 mt-1">
-                          <li className="flex items-start gap-2.5 text-xs">
-                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary font-semibold shrink-0 mt-0.5">1</span>
-                            <div>
-                              <p className="font-medium text-foreground flex items-center gap-1">
-                                <LogIn className="w-3 h-3" /> Inicia sesión en Vercel
-                              </p>
-                              <p className="text-muted-foreground mt-0.5">Accede a tu cuenta en vercel.com con tu proveedor habitual (GitHub, GitLab, etc.).</p>
-                            </div>
-                          </li>
-                          <li className="flex items-start gap-2.5 text-xs">
-                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary font-semibold shrink-0 mt-0.5">2</span>
-                            <div>
-                              <p className="font-medium text-foreground flex items-center gap-1">
-                                <KeyRound className="w-3 h-3" /> Navega a Tokens
-                              </p>
-                              <p className="text-muted-foreground mt-0.5">
-                                Haz clic en los <span className="font-mono bg-muted rounded px-1">...</span> abajo a la izquierda (junto a tu avatar), luego en el icono del <span className="font-mono bg-muted rounded px-1">engranaje</span> y finalmente selecciona <strong>Tokens</strong> en el menú lateral.
-                              </p>
-                            </div>
-                          </li>
-                          <li className="flex items-start gap-2.5 text-xs">
-                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary font-semibold shrink-0 mt-0.5">3</span>
-                            <div>
-                              <p className="font-medium text-foreground flex items-center gap-1">
-                                <Copy className="w-3 h-3" /> Crea y copia el token
-                              </p>
-                              <p className="text-muted-foreground mt-0.5">Haz clic en <span className="font-mono bg-muted rounded px-1">Create Token</span>, dale un nombre descriptivo y copia el token generado. ¡Solo se muestra una vez!</p>
-                            </div>
-                          </li>
-                        </ol>
-                        <a
-                          href="https://vercel.com/account/tokens"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 mt-4 text-xs font-medium text-primary hover:underline underline-offset-2"
-                        >
-                          Ir directamente a vercel.com/account/tokens
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                )}
               </CardContent>
 
               <CardFooter className="flex gap-2 justify-end">

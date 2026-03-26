@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { RefreshCw, Settings2, Triangle, AlertCircle } from "lucide-react";
+import { RefreshCw, Settings2, Triangle, AlertCircle, LayoutGrid, List } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -11,9 +11,12 @@ import { cn } from "@/lib/utils";
 import {
   DeploymentCard,
   DeploymentCardSkeleton,
+  DeploymentListItem,
+  DeploymentListItemSkeleton,
 } from "@/components/DeploymentCard";
 import { PinModal } from "@/components/PinModal";
 import { usePin } from "@/components/PinContext";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { decryptAndRetrieve, hasStoredKey } from "@/lib/storage";
 import type { VercelDeploymentsResponse, VercelDeployment } from "@/lib/vercel";
 
@@ -30,6 +33,7 @@ export default function DashboardPage() {
   //   The real value is read from localStorage only after mount.
   const [hasToken, setHasToken] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Populate hasToken + signal mount after hydration is complete
   useEffect(() => {
@@ -95,16 +99,29 @@ export default function DashboardPage() {
             Últimos despliegues de tus servicios
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={fetchDeployments}
-          disabled={isLoading || !hasPin || !hasToken}
-          className="gap-2"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
-          Actualizar
-        </Button>
+        <div className="flex items-center gap-3">
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "grid" | "list")}>
+            <TabsList className="h-9">
+              <TabsTrigger value="grid" className="px-2" title="Vista de tarjetas">
+                <LayoutGrid className="w-4 h-4" />
+              </TabsTrigger>
+              <TabsTrigger value="list" className="px-2" title="Vista de lista">
+                <List className="w-4 h-4" />
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={fetchDeployments}
+            disabled={isLoading || !hasPin || !hasToken}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            Actualizar
+          </Button>
+        </div>
       </div>
 
       {/* ── Vercel section ────────────────────────────── */}
@@ -147,11 +164,19 @@ export default function DashboardPage() {
 
         {/* Loading skeletons */}
         {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <DeploymentCardSkeleton key={i} />
-            ))}
-          </div>
+          viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <DeploymentCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <DeploymentListItemSkeleton key={i} />
+              ))}
+            </div>
+          )
         )}
 
         {/* Error */}
@@ -169,13 +194,21 @@ export default function DashboardPage() {
           />
         )}
 
-        {/* Success — deployment grid */}
+        {/* Success — deployment grid/list */}
         {state.status === "success" && state.deployments.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {state.deployments.map((d) => (
-              <DeploymentCard key={d.uid} deployment={d} />
-            ))}
-          </div>
+          viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {state.deployments.map((d) => (
+                <DeploymentCard key={d.uid} deployment={d} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {state.deployments.map((d) => (
+                <DeploymentListItem key={d.uid} deployment={d} />
+              ))}
+            </div>
+          )
         )}
 
         {/* Success — no deployments */}
