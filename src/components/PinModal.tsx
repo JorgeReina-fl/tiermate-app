@@ -95,9 +95,7 @@ export function PinModal({ open }: { open: boolean }) {
     <Dialog open={open}>
       <DialogContent 
         className="sm:max-w-md bg-[#16191F] border-border rounded-[0.3rem]"
-        // Prevent closing by ESC or outside click (forces user to enter PIN or use sidebar navigation)
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        showCloseButton={false}
       >
         <DialogHeader>
           <div className="flex items-center gap-2">
