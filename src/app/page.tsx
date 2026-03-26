@@ -89,7 +89,7 @@ export default function DashboardPage() {
       {/* ── Page header ───────────────────────────────── */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl font-bold">Panel de TierMate</h1>
           <p className="text-muted-foreground text-sm mt-1">
             Últimos despliegues de tus servicios
           </p>

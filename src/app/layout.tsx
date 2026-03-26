@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Free Tier Manager — Local-First",
+  title: "TierMate — Unified Free Tier Manager",
   description:
-    "Gestiona tus servicios de Free Tier desde un dashboard seguro. Tus API Keys se guardan cifradas solo en tu navegador.",
+    "Panel Local-First/BYOK seguro para gestionar tus servicios de Free Tier. Tus API Keys se guardan cifradas solo en tu navegador.",
 };
 
 export default function RootLayout({

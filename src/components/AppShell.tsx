@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Shield className="w-4 h-4" />
           </span>
           <div className="leading-tight">
-            <p className="font-semibold text-sm">Free Tier Manager</p>
+            <p className="font-semibold text-sm">TierMate</p>
             <p className="text-[10px] text-muted-foreground">Local-First · BYOK</p>
           </div>
         </div>

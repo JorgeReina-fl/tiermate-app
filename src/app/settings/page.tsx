@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Shield, Eye, EyeOff, CheckCircle2, Trash2, ExternalLink, KeyRound, LogIn, Copy, AlertCircle } from "lucide-react";
+import { Shield, Eye, EyeOff, CheckCircle2, Trash2, ExternalLink, KeyRound, LogIn, Copy, AlertCircle, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Accordion,
   AccordionContent,
@@ -117,12 +118,31 @@ export default function SettingsPage() {
   return (
     <div className="p-8 max-w-2xl mx-auto w-full">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">Configuración</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Configuración de TierMate</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Tus tokens se cifran en tu navegador antes de guardarse. El servidor nunca los ve.
+          Configura tus accesos a servicios de terceros de forma segura.
         </p>
       </div>
+
+      {/* Educational Alert */}
+      <Alert className="mb-8 border-primary/20 bg-primary/5">
+        <ShieldAlert className="h-5 w-5 !text-primary" />
+        <AlertTitle className="font-semibold text-primary ml-1">Tu privacidad es absoluta (Zero-Knowledge)</AlertTitle>
+        <AlertDescription className="text-sm text-foreground/80 mt-3 ml-1">
+          <ul className="space-y-3 list-disc list-inside marker:text-primary/50">
+            <li>
+              <strong>Tus tokens nunca tocan los servidores de TierMate;</strong> se cifran con AES y se guardan exclusivamente en el almacenamiento local de tu navegador.
+            </li>
+            <li>
+              Sin bases de datos centralizadas, <strong>es imposible que nosotros recuperemos tu cuenta</strong> si olvidas tu PIN o borras la caché.
+            </li>
+            <li>
+              Utiliza un <strong>PIN de sesión fuerte</strong>. Como el cifrado es local, la seguridad de tus llaves frente a accesos físicos a tu equipo depende de la complejidad de tu PIN.
+            </li>
+          </ul>
+        </AlertDescription>
+      </Alert>
 
       {/* Session PIN */}
       <Card className="mb-6 border-amber-500/30 bg-amber-500/5">

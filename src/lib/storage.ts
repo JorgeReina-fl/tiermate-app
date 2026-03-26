@@ -1,10 +1,10 @@
 /**
- * storage.ts — Local-First Encrypted Key Storage
+ * storage.ts — TierMate Local-First Encrypted Key Storage
  *
  * Security model:
  *  - API keys are AES-encrypted with a user-supplied PIN before being written to localStorage.
  *  - The PIN is ephemeral (React state only). Closing the tab loses it.
- *  - The server never receives or stores any plain-text key.
+ *  - TierMate's server never receives or stores any plain-text key.
  */
 
 import CryptoJS from "crypto-js";
