@@ -12,6 +12,7 @@ import {
   DeploymentCard,
   DeploymentCardSkeleton,
 } from "@/components/DeploymentCard";
+import { PinModal } from "@/components/PinModal";
 import { usePin } from "@/components/PinContext";
 import { decryptAndRetrieve, hasStoredKey } from "@/lib/storage";
 import type { VercelDeploymentsResponse, VercelDeployment } from "@/lib/vercel";
@@ -139,18 +140,9 @@ export default function DashboardPage() {
           />
         )}
 
-        {/* No PIN */}
+        {/* No PIN Modal */}
         {isMounted && hasToken && !hasPin && (
-          <EmptyState
-            title="Sesión sin PIN activo"
-            description="Introduce tu PIN de sesión en la página de Configuración para descifrar y cargar tus datos."
-            action={
-              <Link href="/settings" className={cn(buttonVariants({ size: "sm" }))}>
-                <Settings2 className="w-3.5 h-3.5 mr-2" />
-                Introducir PIN
-              </Link>
-            }
-          />
+          <PinModal open={true} />
         )}
 
         {/* Loading skeletons */}
