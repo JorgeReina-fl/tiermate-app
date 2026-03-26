@@ -75,7 +75,7 @@ export function DeploymentCard({ deployment }: { deployment: VercelDeployment })
           <div className="min-w-0">
             <p className="font-semibold text-sm truncate">{deployment.name}</p>
             {message && (
-              <p className="text-xs text-muted-foreground truncate mt-0.5">
+              <p className="text-xs text-muted-foreground truncate mt-0.5 font-mono">
                 {message}
               </p>
             )}
@@ -90,7 +90,7 @@ export function DeploymentCard({ deployment }: { deployment: VercelDeployment })
       <CardContent className="py-0 text-xs text-muted-foreground space-y-1">
         <div className="flex items-center gap-1">
           <span className="font-medium">Branch:</span>
-          <code className="bg-muted rounded px-1">{branch}</code>
+          <code className="bg-muted rounded px-1.5 py-0.5 font-mono text-xs">{branch}</code>
         </div>
         <div className="flex items-center gap-1">
           <span className="font-medium">URL:</span>
@@ -98,7 +98,7 @@ export function DeploymentCard({ deployment }: { deployment: VercelDeployment })
             href={`https://${deployment.url}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary underline-offset-2 hover:underline truncate max-w-[200px]"
+            className="text-primary underline-offset-2 hover:underline truncate max-w-[200px] font-mono"
           >
             {deployment.url}
           </a>
@@ -106,7 +106,7 @@ export function DeploymentCard({ deployment }: { deployment: VercelDeployment })
       </CardContent>
 
       <CardFooter className="mt-auto pt-3 flex items-center justify-between">
-        <span className="text-[11px] text-muted-foreground">
+        <span className="text-xs text-muted-foreground font-mono">
           {formatDate(deployment.createdAt)}
         </span>
         {deployment.inspectorUrl && (
@@ -114,9 +114,9 @@ export function DeploymentCard({ deployment }: { deployment: VercelDeployment })
             href={deployment.inspectorUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            Detalles <ExternalLink className="w-3 h-3" />
+            Detalles <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}
       </CardFooter>

@@ -145,10 +145,10 @@ export default function SettingsPage() {
       </Alert>
 
       {/* Session PIN */}
-      <Card className="mb-6 border-amber-500/30 bg-amber-500/5">
+      <Card className="mb-6 border-primary/20 bg-primary/5">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-amber-400" />
+            <Shield className="w-4 h-4 text-primary" />
             <CardTitle className="text-base">PIN de Sesión</CardTitle>
             <Badge variant={hasPin ? "default" : "outline"} className="ml-auto text-xs">
               {hasPin ? "Sesión activa" : "Sin PIN"}
@@ -168,7 +168,7 @@ export default function SettingsPage() {
                   placeholder="Escribe un PIN (mín. 4 caracteres)"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  className="pr-10"
+                  className="pr-10 font-mono"
                   maxLength={32}
                   disabled={lockoutUntil !== null}
                 />
