@@ -47,6 +47,6 @@ export const SERVICES: ServiceDefinition[] = [
     tokenPlaceholder: "Paste your Railway API Token…",
     tokenDocsUrl: "https://railway.app/account/tokens",
     color: "#B45309",
-    available: false, // coming soon
+    available: true,
   },
 ];

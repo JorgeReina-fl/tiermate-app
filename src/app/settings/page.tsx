@@ -20,7 +20,7 @@ import { usePin } from "@/components/PinContext";
 import { SERVICES } from "@/lib/services";
 
 export default function SettingsPage() {
-  const { pin: globalPin, setPin: setGlobalPin, hasPin: hasGlobalPin } = usePin();
+  const { pin: globalPin, setPin: setGlobalPin, hasPin: hasGlobalPin, refreshTokens } = usePin();
   const [localPin, setLocalPin] = useState("");
   const [tokens, setTokens] = useState<Record<string, string>>({});
   const [showPin, setShowPin] = useState(false);
@@ -111,6 +111,7 @@ export default function SettingsPage() {
     }
     encryptAndStore(serviceId, token, localPin);
     setGlobalPin(localPin); // In case they set a NEW pin and saved immediately
+    refreshTokens(); // Ensure live context has the newly decrypted key immediately
     setTokens((prev) => ({ ...prev, [serviceId]: "" }));
     toast.success(`Token de ${serviceId} guardado de forma cifrada en tu navegador.`);
   }
@@ -280,6 +281,40 @@ export default function SettingsPage() {
                             className="inline-flex items-center gap-1.5 mt-3 font-medium text-primary hover:underline underline-offset-2"
                           >
                             Ir a vercel.com/account/tokens
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                    {service.id === "railway" && (
+                      <Popover>
+                        <PopoverTrigger className="text-muted-foreground hover:text-foreground outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-full cursor-help">
+                          <CircleHelp className="w-3.5 h-3.5" />
+                        </PopoverTrigger>
+                        <PopoverContent className="w-96 text-xs shadow-lg border-border" side="right" align="start">
+                          <h4 className="font-semibold mb-2">Acceso a Railway</h4>
+                          <ol className="space-y-2.5">
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">1</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Navegación:</strong> En tu dashboard de Railway, haz clic en tu <strong>Avatar</strong> (arriba a la derecha) y selecciona '<strong>Account Settings</strong>'.</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">2</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Sección Tokens:</strong> En el menú lateral izquierdo, haz clic en '<strong>Tokens</strong>' (o usa el enlace directo de abajo).</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">3</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Crear y Copiar:</strong> Haz clic en '<strong>Create Token</strong>', asígnale un nombre (ej. TierMate-Console) y copia el código inmediatamente.</p>
+                            </li>
+                          </ol>
+                          <p className="mt-3 leading-snug text-muted-foreground">Pega el token aquí y pulsa '<strong>Actualizar Llave y Guardar</strong>' para cifrarlo en tu navegador.</p>
+                          <a
+                            href="https://railway.app/account/tokens"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 mt-3 font-medium text-primary hover:underline underline-offset-2"
+                          >
+                            Ir a railway.app/account/tokens
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         </PopoverContent>
