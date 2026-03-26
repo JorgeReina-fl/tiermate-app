@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Shield, Eye, EyeOff, CheckCircle2, Trash2, ExternalLink } from "lucide-react";
+import { Shield, Eye, EyeOff, CheckCircle2, Trash2, ExternalLink, KeyRound, LogIn, Copy, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { encryptAndStore, hasStoredKey, removeKey } from "@/lib/storage";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { encryptAndStore, hasStoredKey, removeKey, validatePin } from "@/lib/storage";
 import { usePin } from "@/components/PinContext";
 import { SERVICES } from "@/lib/services";
 
@@ -18,6 +24,72 @@ export default function SettingsPage() {
   const [tokens, setTokens] = useState<Record<string, string>>({});
   const [showPin, setShowPin] = useState(false);
   const [showTokens, setShowTokens] = useState<Record<string, boolean>>({});
+
+  // --- New state for Brute Force Protection ---
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    const stored = localStorage.getItem("lf_pin_lockout");
+    if (stored) {
+      const time = parseInt(stored, 10);
+      if (time > Date.now()) {
+        setLockoutUntil(time);
+      } else {
+        localStorage.removeItem("lf_pin_lockout");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!lockoutUntil) return;
+    const updateTimer = () => {
+      const left = Math.max(0, lockoutUntil - Date.now());
+      setTimeRemaining(left);
+      if (left === 0) {
+        setLockoutUntil(null);
+        setFailedAttempts(0);
+        localStorage.removeItem("lf_pin_lockout");
+      }
+    };
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutUntil]);
+
+  function handleCheckPin() {
+    if (!pin) {
+      toast.error("Introduce un PIN para comprobar.");
+      return;
+    }
+    
+    const isValid = validatePin(pin);
+    if (isValid === null) {
+      toast.info("Aún no hay un PIN guardado. Se configurará al guardar tu primer token.");
+      return;
+    }
+    
+    if (isValid) {
+      toast.success("¡El PIN es correcto!");
+      setFailedAttempts(0);
+    } else {
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+      
+      if (newAttempts >= 3) {
+        const lockoutTime = Date.now() + 5 * 60 * 1000;
+        setLockoutUntil(lockoutTime);
+        localStorage.setItem("lf_pin_lockout", lockoutTime.toString());
+        toast.error("Demasiados intentos fallidos. PIN bloqueado.");
+        setPin(""); // erase current input
+      } else {
+        toast.error(`PIN incorrecto. Te quedan ${3 - newAttempts} intentos.`);
+      }
+    }
+  }
 
   function handleSave(serviceId: string) {
     const token = tokens[serviceId]?.trim();
@@ -67,24 +139,44 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="relative">
-            <Input
-              id="session-pin"
-              type={showPin ? "text" : "password"}
-              placeholder="Escribe un PIN (mín. 4 caracteres)"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              className="pr-10"
-              maxLength={32}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPin((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label={showPin ? "Ocultar PIN" : "Mostrar PIN"}
-            >
-              {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  id="session-pin"
+                  type={showPin ? "text" : "password"}
+                  placeholder="Escribe un PIN (mín. 4 caracteres)"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  className="pr-10"
+                  maxLength={32}
+                  disabled={lockoutUntil !== null}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPin((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                  aria-label={showPin ? "Ocultar PIN" : "Mostrar PIN"}
+                  disabled={lockoutUntil !== null}
+                >
+                  {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <Button
+                variant="secondary"
+                onClick={handleCheckPin}
+                disabled={!pin || lockoutUntil !== null}
+              >
+                Comprobar PIN
+              </Button>
+            </div>
+            
+            {isMounted && lockoutUntil !== null && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-md flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <p>Demasiados intentos. Inténtalo de nuevo en {Math.ceil(timeRemaining / 60000)} minutos.</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -143,14 +235,62 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </div>
-                <a
-                  href={service.tokenDocsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
-                >
-                  ¿Cómo obtener el token? <ExternalLink className="w-3 h-3" />
-                </a>
+
+                {/* Guide accordion — only shown for Vercel */}
+                {service.id === "vercel" && (
+                  <Accordion className="w-full">
+                    <AccordionItem value="how-to-get-token" className="border-border">
+                      <AccordionTrigger className="text-xs text-muted-foreground hover:text-foreground py-2 hover:no-underline">
+                        <span className="flex items-center gap-1.5">
+                          <KeyRound className="w-3.5 h-3.5 shrink-0" />
+                          ¿Cómo obtengo mi Vercel Access Token?
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-2">
+                        <ol className="space-y-3 mt-1">
+                          <li className="flex items-start gap-2.5 text-xs">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary font-semibold shrink-0 mt-0.5">1</span>
+                            <div>
+                              <p className="font-medium text-foreground flex items-center gap-1">
+                                <LogIn className="w-3 h-3" /> Inicia sesión en Vercel
+                              </p>
+                              <p className="text-muted-foreground mt-0.5">Accede a tu cuenta en vercel.com con tu proveedor habitual (GitHub, GitLab, etc.).</p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-2.5 text-xs">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary font-semibold shrink-0 mt-0.5">2</span>
+                            <div>
+                              <p className="font-medium text-foreground flex items-center gap-1">
+                                <KeyRound className="w-3 h-3" /> Navega a Tokens
+                              </p>
+                              <p className="text-muted-foreground mt-0.5">
+                                Haz clic en los <span className="font-mono bg-muted rounded px-1">...</span> abajo a la izquierda (junto a tu avatar), luego en el icono del <span className="font-mono bg-muted rounded px-1">engranaje</span> y finalmente selecciona <strong>Tokens</strong> en el menú lateral.
+                              </p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-2.5 text-xs">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary font-semibold shrink-0 mt-0.5">3</span>
+                            <div>
+                              <p className="font-medium text-foreground flex items-center gap-1">
+                                <Copy className="w-3 h-3" /> Crea y copia el token
+                              </p>
+                              <p className="text-muted-foreground mt-0.5">Haz clic en <span className="font-mono bg-muted rounded px-1">Create Token</span>, dale un nombre descriptivo y copia el token generado. ¡Solo se muestra una vez!</p>
+                            </div>
+                          </li>
+                        </ol>
+                        <a
+                          href="https://vercel.com/account/tokens"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 mt-4 text-xs font-medium text-primary hover:underline underline-offset-2"
+                        >
+                          Ir directamente a vercel.com/account/tokens
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                )}
               </CardContent>
 
               <CardFooter className="flex gap-2 justify-end">

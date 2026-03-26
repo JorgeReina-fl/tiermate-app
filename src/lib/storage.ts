@@ -10,6 +10,8 @@
 import CryptoJS from "crypto-js";
 
 const prefix = "lf_enc_"; // localStorage key prefix
+export const PIN_VALIDATOR_KEY = "lf_pin_validator";
+export const PIN_VALIDATOR_VALUE = "stackmate-valid";
 
 /**
  * Encrypts `apiKey` using `pin` and persists the cipher text in localStorage.
@@ -22,6 +24,12 @@ export function encryptAndStore(
   apiKey: string,
   pin: string
 ): void {
+  // Initialize PIN validator if not already set
+  if (!localStorage.getItem(PIN_VALIDATOR_KEY)) {
+    const validatorCipher = CryptoJS.AES.encrypt(PIN_VALIDATOR_VALUE, pin).toString();
+    localStorage.setItem(PIN_VALIDATOR_KEY, validatorCipher);
+  }
+
   const cipherText = CryptoJS.AES.encrypt(apiKey, pin).toString();
   localStorage.setItem(`${prefix}${service}`, cipherText);
 }
@@ -62,4 +70,28 @@ export function hasStoredKey(service: string): boolean {
  */
 export function removeKey(service: string): void {
   localStorage.removeItem(`${prefix}${service}`);
+}
+
+/**
+ * Validates the provided PIN against the local validator string.
+ * Returns `true` if correct, `false` if incorrect, or `null` if no PIN is set up yet.
+ */
+export function validatePin(pin: string): boolean | null {
+  const cipherText = localStorage.getItem(PIN_VALIDATOR_KEY);
+  if (!cipherText) return null;
+
+  try {
+    const bytes = CryptoJS.AES.decrypt(cipherText, pin);
+    const plainText = bytes.toString(CryptoJS.enc.Utf8);
+    return plainText === PIN_VALIDATOR_VALUE;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Checks whether a PIN validator has been configured.
+ */
+export function hasPinValidator(): boolean {
+  return localStorage.getItem(PIN_VALIDATOR_KEY) !== null;
 }
