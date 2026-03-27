@@ -224,7 +224,8 @@ export default function SettingsPage() {
           const stored = typeof window !== "undefined" ? hasStoredKey(service.id) : false;
           const showTok = showTokens[service.id];
           return (
-            <Card key={service.id}>
+            <div id={`card-${service.id}`}>
+              <Card key={service.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">{service.label}</CardTitle>
@@ -436,6 +437,7 @@ export default function SettingsPage() {
                 </Button>
               </CardFooter>
             </Card>
+            </div>
           );
         })}
       </div>

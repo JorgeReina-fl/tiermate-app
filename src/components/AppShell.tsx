@@ -38,8 +38,42 @@ const SERVICE_SECTIONS = [
 ] as const;
 
 const SETTINGS_SECTIONS = [
-  { label: "Seguridad (PIN)", anchorId: "section-security", icon: <Lock className="w-3 h-3 shrink-0" /> },
-  { label: "API Keys", anchorId: "section-api-keys", icon: <Key className="w-3 h-3 shrink-0" /> },
+  { 
+    label: "Seguridad (PIN)", 
+    anchorId: "section-security", 
+    icon: <Lock className="w-3 h-3 shrink-0" /> 
+  },
+  { 
+    label: "API Keys", 
+    anchorId: "section-api-keys", 
+    icon: <Key className="w-3 h-3 shrink-0" />,
+    subItems: [
+      { 
+        key: "vercel", 
+        label: "VERCEL", 
+        anchorId: "card-vercel",
+        icon: <Triangle className="w-3 h-3 fill-current text-neutral-300" />
+      },
+      { 
+        key: "railway", 
+        label: "RAILWAY", 
+        anchorId: "card-railway",
+        icon: <span className="text-[10px] leading-none text-white">⬡</span>
+      },
+      { 
+        key: "render", 
+        label: "RENDER", 
+        anchorId: "card-render",
+        icon: <Box className="w-3 h-3 text-emerald-400" />
+      },
+      { 
+        key: "supabase", 
+        label: "SUPABASE", 
+        anchorId: "card-supabase",
+        icon: <Database className="w-3 h-3 text-emerald-500" />
+      },
+    ]
+  },
 ] as const;
 
 /* ── Main component ────────────────────────────────────────── */
@@ -51,17 +85,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   /* IntersectionObserver — tracks which section is in viewport */
   useEffect(() => {
-    const anchors = [
-      "section-vercel",
-      "section-railway",
-      "section-render",
-      "section-supabase",
-      "section-security",
-      "section-api-keys",
-    ];
-
-    const observers: IntersectionObserver[] = [];
-
     const handleIntersect = (entries: IntersectionObserverEntry[]) => {
       // Find the most prominent intersecting entry
       const visible = entries.find(e => e.isIntersecting);
@@ -69,6 +92,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         setActiveSection(visible.target.id);
       }
     };
+
+    const anchors = [
+      "section-vercel",
+      "section-railway",
+      "section-render",
+      "section-supabase",
+      "section-security",
+      "section-api-keys",
+      "card-vercel",
+      "card-railway",
+      "card-render",
+      "card-supabase",
+    ];
 
     const observer = new IntersectionObserver(handleIntersect, {
       rootMargin: "-20% 0px -70% 0px",
@@ -98,8 +134,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const isDashboard = pathname === "/";
   const isSettings = pathname === "/settings";
-
-  const hasAnyService = hasVercel || hasRailway || hasRender;
+  const hasAnyService = hasVercel || hasRailway || hasRender || hasSupabase;
 
   return (
     <div className="flex min-h-screen relative z-10">
@@ -156,7 +191,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                       }`}
                   >
-                    {/* Active indicator */}
                     <span className={`w-1 h-1 rounded-full shrink-0 transition-colors ${isActive ? "bg-primary" : "bg-border"}`} />
                     {icon}
                     {label}
@@ -182,23 +216,49 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Quick-access sub-links for settings */}
             {isSettings && (
-              <div className="ml-4 pl-3 border-l border-border/60 space-y-0.5 py-1 mt-0.5">
-                {SETTINGS_SECTIONS.map(({ label, anchorId, icon }) => {
-                  const isActive = activeSection === anchorId;
+              <div className="ml-4 pl-3 border-l border-border/60 space-y-0.5 py-1 mt-0.5 relative">
+                {SETTINGS_SECTIONS.map((section) => {
+                  const isActive = activeSection === section.anchorId;
+                  const hasSubItems = 'subItems' in section;
+                  
                   return (
-                    <button
-                      key={anchorId}
-                      onClick={() => scrollTo(anchorId)}
-                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[0.3rem] text-xs font-mono transition-colors text-left
-                        ${isActive
-                          ? "text-foreground bg-accent"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                        }`}
-                    >
-                      <span className={`w-1 h-1 rounded-full shrink-0 transition-colors ${isActive ? "bg-primary" : "bg-border"}`} />
-                      {icon}
-                      {label}
-                    </button>
+                    <div key={section.anchorId}>
+                      <button
+                        onClick={() => scrollTo(section.anchorId)}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-[0.3rem] text-xs font-mono transition-colors text-left
+                          ${isActive
+                            ? "text-foreground bg-accent"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                          }`}
+                      >
+                        <span className={`w-1 h-1 rounded-full shrink-0 transition-colors ${isActive ? "bg-primary" : "bg-border"}`} />
+                        {section.icon}
+                        {section.label}
+                      </button>
+
+                      {/* 3rd Level: Provider sub-items */}
+                      {hasSubItems && section.subItems && (
+                        <div className="ml-3 pl-3 border-l border-border/40 space-y-0.5 mt-0.5 mb-1 py-0.5">
+                          {section.subItems.map((sub) => {
+                            const isSubActive = activeSection === sub.anchorId;
+                            return (
+                              <button
+                                key={sub.key}
+                                onClick={() => scrollTo(sub.anchorId)}
+                                className={`w-full flex items-center gap-2 px-2 py-1 rounded-[0.2rem] text-[10px] font-mono tracking-widest transition-colors text-left uppercase
+                                  ${isSubActive
+                                    ? "text-primary bg-primary/5"
+                                    : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30"
+                                  }`}
+                              >
+                                {sub.icon}
+                                <span>{sub.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
