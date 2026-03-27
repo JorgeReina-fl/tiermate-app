@@ -95,16 +95,18 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Vercel section ────────────────────────────── */}
-      <ServiceSection
-        title="Vercel"
-        icon={<Triangle className="w-3.5 h-3.5 fill-current" />}
-        state={vercelState}
-        hasToken={hasVercel}
-        hasPin={hasPin}
-        viewMode={viewMode}
-        onRetry={refresh}
-        isMounted={isMounted}
-      />
+      {hasVercel && (
+        <ServiceSection
+          title="Vercel"
+          icon={<Triangle className="w-3.5 h-3.5 fill-current" />}
+          state={vercelState}
+          hasToken={hasVercel}
+          hasPin={hasPin}
+          viewMode={viewMode}
+          onRetry={refresh}
+          isMounted={isMounted}
+        />
+      )}
 
       {/* ── Railway section ───────────────────────────── */}
       {hasRailway && (

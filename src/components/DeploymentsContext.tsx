@@ -118,10 +118,33 @@ export function DeploymentsProvider({ children }: { children: React.ReactNode })
 
   const refresh = useCallback(() => {
     if (!hasPin) return;
+    
+    // Evaluate and execute independently (Patch 1 & 2: Resilient Fetching & Isolation)
+    const vExists = hasStoredKey("vercel");
+    const rExists = hasStoredKey("railway");
+    
+    // Ensure accurate state matching localStorage to avoid clobbering
+    setHasVercel(vExists);
+    setHasRailway(rExists);
+
     const vToken = decryptAndRetrieve("vercel", pin);
     const rToken = decryptAndRetrieve("railway", pin);
-    if (vToken) fetchVercel(vToken);
-    if (rToken) fetchRailway(rToken);
+    
+    if (vToken) {
+      try {
+        fetchVercel(vToken);
+      } catch (e) {
+        console.error("Vercel context fetch failed", e);
+      }
+    }
+    
+    if (rToken) {
+      try {
+        fetchRailway(rToken);
+      } catch (e) {
+        console.error("Railway context fetch failed", e);
+      }
+    }
   }, [hasPin, pin, fetchVercel, fetchRailway]);
 
   // Clear data when session is locked
