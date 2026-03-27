@@ -16,8 +16,10 @@ import React, {
 } from "react";
 import { usePin } from "@/components/PinContext";
 import { hasStoredKey, decryptAndRetrieve } from "@/lib/storage";
-import type { VercelDeployment, VercelDeploymentsResponse } from "@/lib/vercel";
+import type { VercelDeployment, VercelDeploymentsResponse, DeploymentState } from "@/lib/vercel";
 import type { RailwayDeployment, RailwayProxyResponse } from "@/lib/railway";
+
+/* ── Render types ─────────────────────────────────────────────── */
 
 interface RenderService {
   id: string;
@@ -40,9 +42,18 @@ interface RenderResponse {
   cursor: string;
 }
 
-/* ── Status adapter ───────────────────────────────────────────── */
+/* ── Supabase types ───────────────────────────────────────────── */
 
-import type { DeploymentState } from "@/lib/vercel";
+interface SupabaseProject {
+  id: string;
+  name: string;
+  region: string;
+  status: string;
+  created_at: string;
+  organization_id: string;
+}
+
+/* ── Status adapters ──────────────────────────────────────────── */
 
 function mapRailwayStatus(status: string): DeploymentState {
   switch (status) {
@@ -87,7 +98,7 @@ function mapRenderStatus(status: string | undefined, suspended: string | undefin
     case "created":
       return "QUEUED";
     default:
-      return "READY"; // Render 'live' is the common state
+      return "READY";
   }
 }
 
@@ -102,18 +113,48 @@ function adaptRenderService(rs: RenderService): VercelDeployment {
   };
 }
 
+function mapSupabaseStatus(status: string): DeploymentState {
+  switch (status?.toUpperCase()) {
+    case "ACTIVE_HEALTHY":
+      return "READY";
+    case "COMING_UP":
+    case "RESTORING":
+    case "UPGRADING":
+      return "BUILDING";
+    case "INACTIVE":
+    case "PAUSED":
+      return "ERROR";
+    default:
+      return "READY";
+  }
+}
+
+function adaptSupabaseProject(p: SupabaseProject): VercelDeployment {
+  return {
+    uid: p.id,
+    name: p.name,
+    url: `${p.id}.supabase.co`,
+    state: mapSupabaseStatus(p.status),
+    createdAt: new Date(p.created_at).getTime(),
+    meta: { githubCommitRef: p.region },
+  };
+}
+
 /* ── Context shape ────────────────────────────────────────────── */
 
 interface DeploymentsContextValue {
   vercelItems: VercelDeployment[];
   railwayItems: VercelDeployment[];
   renderItems: VercelDeployment[];
+  supabaseItems: VercelDeployment[];
   isLoadingVercel: boolean;
   isLoadingRailway: boolean;
   isLoadingRender: boolean;
+  isLoadingSupabase: boolean;
   hasVercel: boolean;
   hasRailway: boolean;
   hasRender: boolean;
+  hasSupabase: boolean;
   refresh: () => void;
 }
 
@@ -127,18 +168,22 @@ export function DeploymentsProvider({ children }: { children: React.ReactNode })
   const [vercelItems, setVercelItems] = useState<VercelDeployment[]>([]);
   const [railwayItems, setRailwayItems] = useState<VercelDeployment[]>([]);
   const [renderItems, setRenderItems] = useState<VercelDeployment[]>([]);
+  const [supabaseItems, setSupabaseItems] = useState<VercelDeployment[]>([]);
   const [isLoadingVercel, setIsLoadingVercel] = useState(false);
   const [isLoadingRailway, setIsLoadingRailway] = useState(false);
   const [isLoadingRender, setIsLoadingRender] = useState(false);
+  const [isLoadingSupabase, setIsLoadingSupabase] = useState(false);
   const [hasVercel, setHasVercel] = useState(false);
   const [hasRailway, setHasRailway] = useState(false);
   const [hasRender, setHasRender] = useState(false);
+  const [hasSupabase, setHasSupabase] = useState(false);
 
   // Detect stored keys once on mount
   useEffect(() => {
     setHasVercel(hasStoredKey("vercel"));
     setHasRailway(hasStoredKey("railway"));
     setHasRender(hasStoredKey("render"));
+    setHasSupabase(hasStoredKey("supabase"));
   }, []);
 
   const fetchVercel = useCallback(async (token: string) => {
@@ -177,14 +222,12 @@ export function DeploymentsProvider({ children }: { children: React.ReactNode })
   const fetchRender = useCallback(async (token: string) => {
     setIsLoadingRender(true);
     try {
-      // Use local Next.js proxy rewrite to bypass strict CORS from Render
       const res = await fetch("/api/proxy/render/services", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error(`Render ${res.status}`);
       const data: RenderResponse[] = await res.json();
       console.log("Render API Response:", data);
-      
       const validItems = data.filter(item => item && item.service).map(item => item.service);
       setRenderItems(validItems.map(adaptRenderService));
     } catch (e) {
@@ -194,53 +237,65 @@ export function DeploymentsProvider({ children }: { children: React.ReactNode })
     }
   }, []);
 
+  const fetchSupabase = useCallback(async (token: string) => {
+    setIsLoadingSupabase(true);
+    try {
+      // Uses Next.js rewrite: /api/proxy/supabase/* → https://api.supabase.com/v1/*
+      const res = await fetch("/api/proxy/supabase/projects", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error(`Supabase ${res.status}`);
+      const data: SupabaseProject[] = await res.json();
+      console.log("Supabase API Response:", data);
+      setSupabaseItems(Array.isArray(data) ? data.map(adaptSupabaseProject) : []);
+    } catch (e) {
+      console.error("Supabase Fetch Error:", e);
+    } finally {
+      setIsLoadingSupabase(false);
+    }
+  }, []);
+
   const refresh = useCallback(() => {
     if (!hasPin) return;
-    
-    // Evaluate and execute independently (Patch 1 & 2: Resilient Fetching & Isolation)
+
     const vExists = hasStoredKey("vercel");
     const rExists = hasStoredKey("railway");
     const rdExists = hasStoredKey("render");
-    
-    // Ensure accurate state matching localStorage to avoid clobbering
+    const sbExists = hasStoredKey("supabase");
+
     setHasVercel(vExists);
     setHasRailway(rExists);
     setHasRender(rdExists);
+    setHasSupabase(sbExists);
 
     const vToken = decryptAndRetrieve("vercel", pin);
     const rToken = decryptAndRetrieve("railway", pin);
     const rdToken = decryptAndRetrieve("render", pin);
-    
+    const sbToken = decryptAndRetrieve("supabase", pin);
+
     if (vToken) {
-      try {
-        fetchVercel(vToken);
-      } catch (e) {
-        console.error("Vercel context fetch failed", e);
-      }
+      try { fetchVercel(vToken); } catch (e) { console.error("Vercel context fetch failed", e); }
     }
-    
     if (rToken) {
-      try {
-        fetchRailway(rToken);
-      } catch (e) {
-        console.error("Railway context fetch failed", e);
-      }
+      try { fetchRailway(rToken); } catch (e) { console.error("Railway context fetch failed", e); }
     }
-
     if (rdToken) {
-      try {
-        fetchRender(rdToken);
-      } catch (e) {
-        console.error("Render context fetch failed", e);
-      }
+      try { fetchRender(rdToken); } catch (e) { console.error("Render context fetch failed", e); }
     }
-  }, [hasPin, pin, fetchVercel, fetchRailway, fetchRender]);
+    if (sbToken) {
+      try { fetchSupabase(sbToken); } catch (e) { console.error("Supabase context fetch failed", e); }
+    }
+  }, [hasPin, pin, fetchVercel, fetchRailway, fetchRender, fetchSupabase]);
 
-  // Clear data when session is locked
+  // Clear all data when session is locked
   useEffect(() => {
     if (!hasPin) {
       setVercelItems([]);
       setRailwayItems([]);
+      setRenderItems([]);
+      setSupabaseItems([]);
     }
   }, [hasPin]);
 
@@ -256,12 +311,15 @@ export function DeploymentsProvider({ children }: { children: React.ReactNode })
         vercelItems,
         railwayItems,
         renderItems,
+        supabaseItems,
         isLoadingVercel,
         isLoadingRailway,
         isLoadingRender,
+        isLoadingSupabase,
         hasVercel,
         hasRailway,
         hasRender,
+        hasSupabase,
         refresh,
       }}
     >

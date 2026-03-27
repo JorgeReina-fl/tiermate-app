@@ -72,13 +72,13 @@ export default function SettingsPage() {
       toast.error("Introduce un PIN para comprobar.");
       return;
     }
-    
+
     const isValid = validatePin(localPin);
     if (isValid === null) {
       toast.info("Aún no hay un PIN guardado. Se configurará al guardar tu primer token.");
       return;
     }
-    
+
     if (isValid) {
       toast.success("¡El PIN es correcto!");
       setGlobalPin(localPin);
@@ -86,7 +86,7 @@ export default function SettingsPage() {
     } else {
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
-      
+
       if (newAttempts >= 3) {
         const lockoutTime = Date.now() + 5 * 60 * 1000;
         setLockoutUntil(lockoutTime);
@@ -155,64 +155,64 @@ export default function SettingsPage() {
 
       {/* Session PIN */}
       <div id="section-security">
-      <Card className="mb-6 border-primary/20 bg-primary/5">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-primary" />
-            <CardTitle className="text-base">PIN de Sesión</CardTitle>
-            <Badge variant={hasGlobalPin ? "default" : "outline"} className="ml-auto text-xs">
-              {hasGlobalPin ? "Sesión activa" : "Sin PIN"}
-            </Badge>
-          </div>
-          <CardDescription className="text-xs">
-            El PIN cifra y descifra tus tokens. Solo existe en memoria — si refrescas la página, deberás introducirlo de nuevo.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-3">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  id="session-pin"
-                  type={showPin ? "text" : "password"}
-                  placeholder="Escribe un PIN (mín. 4 caracteres)"
-                  value={localPin}
-                  onChange={(e) => setLocalPin(e.target.value)}
-                  className="pr-10 font-mono"
-                  maxLength={32}
-                  disabled={lockoutUntil !== null}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPin((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-                  aria-label={showPin ? "Ocultar PIN" : "Mostrar PIN"}
-                  disabled={lockoutUntil !== null}
-                >
-                  {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              <Button
-                variant="secondary"
-                onClick={handleCheckPin}
-                disabled={!localPin || lockoutUntil !== null}
-              >
-                Comprobar PIN
-              </Button>
+        <Card className="mb-6 border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" />
+              <CardTitle className="text-base">PIN de Sesión</CardTitle>
+              <Badge variant={hasGlobalPin ? "default" : "outline"} className="ml-auto text-xs">
+                {hasGlobalPin ? "Sesión activa" : "Sin PIN"}
+              </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 font-mono">
-              Este PIN se convertirá en la única llave para acceder a tus datos locales. Si ya tenías datos guardados, el nuevo PIN sustituirá al anterior.
-            </p>
-            
-            {isMounted && lockoutUntil !== null && (
-              <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-md flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <p>Demasiados intentos. Inténtalo de nuevo en {Math.ceil(timeRemaining / 60000)} minutos.</p>
+            <CardDescription className="text-xs">
+              El PIN cifra y descifra tus tokens. Solo existe en memoria — si refrescas la página, deberás introducirlo de nuevo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="session-pin"
+                    type={showPin ? "text" : "password"}
+                    placeholder="Escribe un PIN (mín. 4 caracteres)"
+                    value={localPin}
+                    onChange={(e) => setLocalPin(e.target.value)}
+                    className="pr-10 font-mono"
+                    maxLength={32}
+                    disabled={lockoutUntil !== null}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPin((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                    aria-label={showPin ? "Ocultar PIN" : "Mostrar PIN"}
+                    disabled={lockoutUntil !== null}
+                  >
+                    {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={handleCheckPin}
+                  disabled={!localPin || lockoutUntil !== null}
+                >
+                  Comprobar PIN
+                </Button>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              <p className="text-xs text-muted-foreground mt-1 font-mono">
+                Este PIN se convertirá en la única llave para acceder a tus datos locales. Si ya tenías datos guardados, el nuevo PIN sustituirá al anterior.
+              </p>
+
+              {isMounted && lockoutUntil !== null && (
+                <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-md flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <p>Demasiados intentos. Inténtalo de nuevo en {Math.ceil(timeRemaining / 60000)} minutos.</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>{/* /section-security */}
 
       {/* Active services */}
@@ -351,6 +351,40 @@ export default function SettingsPage() {
                             className="inline-flex items-center gap-1.5 mt-3 font-medium text-primary hover:underline underline-offset-2"
                           >
                             Ir a dashboard.render.com/u/settings
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                    {service.id === "supabase" && (
+                      <Popover>
+                        <PopoverTrigger className="text-muted-foreground hover:text-foreground outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-full cursor-help">
+                          <CircleHelp className="w-3.5 h-3.5" />
+                        </PopoverTrigger>
+                        <PopoverContent className="w-96 text-xs shadow-lg border-border" side="right" align="start">
+                          <h4 className="font-semibold mb-2">Acceso a Supabase</h4>
+                          <ol className="space-y-2.5">
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">1</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Dashboard:</strong> Entra en tu Dashboard de Supabase, haz clic en tu <strong>Avatar</strong> (esquina superior derecha) y ve a '<strong>Account Settings</strong>'.</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">2</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Access Tokens:</strong> Selecciona '<strong>Access Tokens</strong>' en el menú (o usa el enlace directo abajo).</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">3</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Generar:</strong> Haz clic en '<strong>Generate new token</strong>', asígnale un nombre (ej. TierMate) y copia el token inmediatamente.</p>
+                            </li>
+                          </ol>
+                          <p className="mt-3 leading-snug text-muted-foreground">Pega el token aquí y pulsa '<strong>Actualizar Llave y Guardar</strong>' para cifrarlo localmente.</p>
+                          <a
+                            href="https://supabase.com/dashboard/account/tokens"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 mt-3 font-medium text-primary hover:underline underline-offset-2"
+                          >
+                            Ir a supabase.com/dashboard/account/tokens
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         </PopoverContent>

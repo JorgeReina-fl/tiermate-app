@@ -33,10 +33,11 @@ const NAV_ITEMS = [
 
 /* ── Service badge ────────────────────────────────────────────── */
 
-function ServiceBadge({ service }: { service: "vercel" | "railway" | "render" }) {
+function ServiceBadge({ service }: { service: "vercel" | "railway" | "render" | "supabase" }) {
   const isVercel = service === "vercel";
   const isRailway = service === "railway";
   const isRender = service === "render";
+  const isSupabase = service === "supabase";
   
   let borderColor = "rgba(255,255,255,0.20)";
   let textColor = "rgba(220,220,221,0.70)";
@@ -50,6 +51,10 @@ function ServiceBadge({ service }: { service: "vercel" | "railway" | "render" })
     borderColor = "rgba(70,227,183,0.40)";
     textColor = "rgb(70,227,183)";
     bgColor = "rgba(70,227,183,0.10)";
+  } else if (isSupabase) {
+    borderColor = "rgba(62,207,142,0.40)";
+    textColor = "rgb(62,207,142)";
+    bgColor = "rgba(62,207,142,0.10)";
   }
 
   return (
@@ -73,6 +78,7 @@ function ServiceBadge({ service }: { service: "vercel" | "railway" | "render" })
       {isVercel && <Triangle style={{ width: 7, height: 7, fill: "currentColor" }} />}
       {isRailway && <span style={{ fontSize: "0.7rem", lineHeight: 1 }}>⬡</span>}
       {isRender && <Box style={{ width: 8, height: 8 }} />}
+      {isSupabase && <span style={{ fontSize: "0.7rem", lineHeight: 1 }}>◈</span>}
       {service.charAt(0).toUpperCase() + service.slice(1)}
     </span>
   );
@@ -82,7 +88,7 @@ function ServiceBadge({ service }: { service: "vercel" | "railway" | "render" })
 
 export function CommandMenu() {
   const { hasPin } = usePin();
-  const { vercelItems, railwayItems, renderItems } = useDeployments();
+  const { vercelItems, railwayItems, renderItems, supabaseItems } = useDeployments();
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
 
@@ -271,6 +277,30 @@ export function CommandMenu() {
                     <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                     <span className="cmd-mono flex-1 truncate">{d.name}</span>
                     <ServiceBadge service="render" />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </>
+          )}
+
+          {/* ── Supabase projects ── */}
+          {supabaseItems.length > 0 && (
+            <>
+              <CommandSeparator />
+              <CommandGroup heading="Supabase">
+                {supabaseItems.map((d) => (
+                  <CommandItem
+                    key={d.uid}
+                    value={`${d.name} supabase`}
+                    onSelect={() =>
+                      handleSelect(() => window.open(`https://supabase.com/dashboard/project/${d.uid}`, "_blank"))
+                    }
+                    className="gap-3"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                    <span className="cmd-mono flex-1 truncate">{d.name}</span>
+                    <span className="cmd-mono text-[10px] text-muted-foreground">{d.meta?.githubCommitRef}</span>
+                    <ServiceBadge service="supabase" />
                   </CommandItem>
                 ))}
               </CommandGroup>

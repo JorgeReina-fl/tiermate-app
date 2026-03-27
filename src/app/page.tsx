@@ -27,12 +27,15 @@ export default function DashboardPage() {
     vercelItems, 
     railwayItems, 
     renderItems,
+    supabaseItems,
     isLoadingVercel, 
     isLoadingRailway, 
     isLoadingRender,
+    isLoadingSupabase,
     hasVercel, 
     hasRailway, 
     hasRender,
+    hasSupabase,
     refresh 
   } = useDeployments();
 
@@ -45,7 +48,7 @@ export default function DashboardPage() {
 
   if (!isMounted) return null;
 
-  const hasAnyService = hasVercel || hasRailway || hasRender;
+  const hasAnyService = hasVercel || hasRailway || hasRender || hasSupabase;
 
   return (
     <div className="relative flex-1 flex flex-col min-h-screen">
@@ -138,6 +141,19 @@ export default function DashboardPage() {
                 icon={<Box className="w-4 h-4 text-[#46E3B7]" />}
                 items={renderItems}
                 isLoading={isLoadingRender}
+                viewMode={viewMode}
+              />
+            </div>
+          )}
+
+          {/* ── Supabase Section ── */}
+          {hasSupabase && (
+            <div id="section-supabase">
+              <ServiceSection
+                title="Supabase"
+                icon={<Database className="w-4 h-4 text-[#3ECF8E]" />}
+                items={supabaseItems}
+                isLoading={isLoadingSupabase}
                 viewMode={viewMode}
               />
             </div>

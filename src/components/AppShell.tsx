@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, LayoutDashboard, Settings, Triangle, Box, Lock, Key } from "lucide-react";
+import { Shield, LayoutDashboard, Settings, Triangle, Box, Lock, Key, Database } from "lucide-react";
 import { CommandMenu } from "@/components/CommandMenu";
 import { Kbd } from "@/components/ui/kbd";
 import { useDeployments } from "@/components/DeploymentsContext";
@@ -29,6 +29,12 @@ const SERVICE_SECTIONS = [
     anchorId: "section-render",
     icon: <Box className="w-3 h-3 shrink-0 text-[#46E3B7]" />,
   },
+  {
+    key: "supabase",
+    label: "Supabase",
+    anchorId: "section-supabase",
+    icon: <Database className="w-3 h-3 shrink-0 text-[#3ECF8E]" />,
+  },
 ] as const;
 
 const SETTINGS_SECTIONS = [
@@ -40,7 +46,7 @@ const SETTINGS_SECTIONS = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { hasVercel, hasRailway, hasRender } = useDeployments();
+  const { hasVercel, hasRailway, hasRender, hasSupabase } = useDeployments();
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
   /* IntersectionObserver — tracks which section is in viewport */
@@ -49,26 +55,37 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       "section-vercel",
       "section-railway",
       "section-render",
+      "section-supabase",
       "section-security",
       "section-api-keys",
     ];
 
     const observers: IntersectionObserver[] = [];
 
-    anchors.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setActiveSection(id);
-        },
-        { rootMargin: "-30% 0px -60% 0px", threshold: 0 }
-      );
-      obs.observe(el);
-      observers.push(obs);
+    const handleIntersect = (entries: IntersectionObserverEntry[]) => {
+      // Find the most prominent intersecting entry
+      const visible = entries.find(e => e.isIntersecting);
+      if (visible) {
+        setActiveSection(visible.target.id);
+      }
+    };
+
+    const observer = new IntersectionObserver(handleIntersect, {
+      rootMargin: "-20% 0px -70% 0px",
+      threshold: 0
     });
 
-    return () => observers.forEach((o) => o.disconnect());
+    anchors.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  // Reset active section when navigating between main pages
+  useEffect(() => {
+    setActiveSection(null);
   }, [pathname]);
 
   function scrollTo(id: string) {
@@ -124,7 +141,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 const isEnabled =
                   (key === "vercel" && hasVercel) ||
                   (key === "railway" && hasRailway) ||
-                  (key === "render" && hasRender);
+                  (key === "render" && hasRender) ||
+                  (key === "supabase" && hasSupabase);
 
                 if (!isEnabled) return null;
 

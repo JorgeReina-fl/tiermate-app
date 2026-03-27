@@ -49,4 +49,13 @@ export const SERVICES: ServiceDefinition[] = [
     color: "#B45309",
     available: true,
   },
+  {
+    id: "supabase",
+    label: "Supabase",
+    description: "Monitor projects on Supabase.",
+    tokenPlaceholder: "Paste your Supabase Personal Access Token…",
+    tokenDocsUrl: "https://supabase.com/dashboard/account/tokens",
+    color: "#3ECF8E",
+    available: true,
+  },
 ];
