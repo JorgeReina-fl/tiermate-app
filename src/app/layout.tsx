@@ -32,7 +32,31 @@ export default function RootLayout({
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full">
+      <body className="min-h-full relative">
+        {/* Global Pattern Texture Backdrop */}
+        <div className="fixed inset-0 z-0 pointer-events-none select-none overflow-hidden opacity-[0.025]">
+          <svg width="100%" height="100%">
+            <defs>
+              <pattern
+                id="root-tiermate-pattern"
+                width="180"
+                height="80"
+                patternUnits="userSpaceOnUse"
+                patternTransform="rotate(-15)"
+              >
+                <text
+                  x="0"
+                  y="50"
+                  className="font-mono font-black text-4xl fill-foreground"
+                >
+                  TierMate
+                </text>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#root-tiermate-pattern)" />
+          </svg>
+        </div>
+
         <PinProvider>
           <DeploymentsProvider>
             <AppShell>{children}</AppShell>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { RefreshCw, Settings2, Triangle, AlertCircle, LayoutGrid, List } from "lucide-react";
+import { RefreshCw, Settings2, Triangle, AlertCircle, LayoutGrid, List, Shield, ServerOff, Database, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -17,6 +17,8 @@ import { usePin } from "@/components/PinContext";
 import { useDeployments } from "@/components/DeploymentsContext";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { VercelDeployment } from "@/lib/vercel";
+import { WelcomeTour } from "@/components/WelcomeTour";
+import Link from "next/link";
 
 type FetchState<T> =
   | { status: "idle" }
@@ -60,8 +62,10 @@ export default function DashboardPage() {
   const hasSomeToken = hasVercel || hasRailway;
 
   return (
-    <div className="p-8 max-w-5xl w-full mx-auto">
-      {/* ── Page header ───────────────────────────────── */}
+    <div className="relative flex flex-col min-h-full w-full">
+      {/* ── Main Content Container ────────────────────── */}
+      <div className="relative z-10 p-8 max-w-5xl w-full mx-auto flex flex-col flex-1">
+        {/* ── Page header ───────────────────────────────── */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold">Panel de TierMate</h1>
@@ -93,6 +97,59 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+
+      {/* ── Empty State & Welcome Tour ────────────────── */}
+      {isMounted && !hasSomeToken && !isLoading && (
+        <div className="flex flex-col items-center justify-center flex-1 mt-8 mb-12 animate-in fade-in duration-700">
+          
+          {/* Central Manifest Card */}
+          <div className="w-full max-w-3xl bg-[#16191F]/90 backdrop-blur-md border border-border/50 rounded-xl p-8 sm:p-10 shadow-2xl animate-in zoom-in-95 duration-500">
+            
+            <div className="flex flex-col items-center mb-8 text-center">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-4 ring-1 ring-primary/20">
+                <Shield className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-white tracking-tight">
+                Tu privacidad es absoluta (Zero-Knowledge)
+              </h2>
+            </div>
+
+            <ul className="space-y-6 text-foreground/80 text-base">
+              <li className="flex gap-4 items-start">
+                <ServerOff className="w-6 h-6 text-muted-foreground shrink-0 mt-0.5" />
+                <p className="leading-relaxed">
+                  <strong>Tus tokens nunca tocan los servidores de TierMate;</strong> se cifran con AES y se guardan exclusivamente en el almacenamiento local de tu navegador.
+                </p>
+              </li>
+              <li className="flex gap-4 items-start">
+                <Database className="w-6 h-6 text-muted-foreground shrink-0 mt-0.5" />
+                <p className="leading-relaxed">
+                  Sin bases de datos centralizadas, <strong>es imposible que nosotros recuperemos tu cuenta</strong> si olvidas tu PIN o borras la caché.
+                </p>
+              </li>
+              <li className="flex gap-4 items-start">
+                <Key className="w-6 h-6 text-muted-foreground shrink-0 mt-0.5" />
+                <p className="leading-relaxed">
+                  Utiliza un <strong>PIN de sesión fuerte</strong>. Como el cifrado es local, la seguridad de tus llaves frente a accesos físicos a tu equipo depende de la complejidad de tu PIN.
+                </p>
+              </li>
+            </ul>
+
+            <hr className="w-full border-border/50 my-8" />
+
+            <div className="flex justify-center">
+              <Link href="/settings" passHref legacyBehavior>
+                <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8 text-sm font-medium shadow-lg shadow-primary/20">
+                  ⚙️ Ir a Configuración
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Interactive Tour (renders over everything if not skipped) */}
+          <WelcomeTour />
+        </div>
+      )}
 
       {/* ── Vercel section ────────────────────────────── */}
       {hasVercel && (
@@ -128,6 +185,7 @@ export default function DashboardPage() {
       {isMounted && hasSomeToken && !hasPin && (
         <PinModal open={true} />
       )}
+      </div>
     </div>
   );
 }

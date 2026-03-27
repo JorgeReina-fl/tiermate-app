@@ -14,9 +14,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen relative z-10">
       {/* Sidebar */}
-      <aside className="w-64 shrink-0 border-r border-border flex flex-col">
+      <aside className="w-64 shrink-0 border-r border-border flex flex-col bg-background/50 backdrop-blur-xl">
         {/* Logo */}
         <div className="h-16 flex items-center gap-3 px-6 border-b border-border">
           <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground">
