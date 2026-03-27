@@ -10,7 +10,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, Settings, ExternalLink, Triangle } from "lucide-react";
+import { LayoutDashboard, Settings, ExternalLink, Triangle, Box } from "lucide-react";
 import {
   CommandDialog,
   Command,
@@ -33,8 +33,25 @@ const NAV_ITEMS = [
 
 /* ── Service badge ────────────────────────────────────────────── */
 
-function ServiceBadge({ service }: { service: "vercel" | "railway" }) {
+function ServiceBadge({ service }: { service: "vercel" | "railway" | "render" }) {
   const isVercel = service === "vercel";
+  const isRailway = service === "railway";
+  const isRender = service === "render";
+  
+  let borderColor = "rgba(255,255,255,0.20)";
+  let textColor = "rgba(220,220,221,0.70)";
+  let bgColor = "rgba(255,255,255,0.04)";
+
+  if (isRailway) {
+    borderColor = "rgba(180,83,9,0.50)";
+    textColor = "rgb(251,146,60)";
+    bgColor = "rgba(180,83,9,0.12)";
+  } else if (isRender) {
+    borderColor = "rgba(70,227,183,0.40)";
+    textColor = "rgb(70,227,183)";
+    bgColor = "rgba(70,227,183,0.10)";
+  }
+
   return (
     <span
       style={{
@@ -44,21 +61,19 @@ function ServiceBadge({ service }: { service: "vercel" | "railway" }) {
         padding: "1px 6px",
         borderRadius: "0.3rem",
         border: "1px solid",
-        borderColor: isVercel ? "rgba(255,255,255,0.20)" : "rgba(180,83,9,0.50)",
-        color: isVercel ? "rgba(220,220,221,0.70)" : "rgb(251,146,60)",
-        background: isVercel ? "rgba(255,255,255,0.04)" : "rgba(180,83,9,0.12)",
+        borderColor,
+        color: textColor,
+        background: bgColor,
         flexShrink: 0,
         display: "inline-flex",
         alignItems: "center",
         gap: 3,
       }}
     >
-      {isVercel ? (
-        <Triangle style={{ width: 7, height: 7, fill: "currentColor" }} />
-      ) : (
-        <span style={{ fontSize: "0.7rem", lineHeight: 1 }}>⬡</span>
-      )}
-      {isVercel ? "Vercel" : "Railway"}
+      {isVercel && <Triangle style={{ width: 7, height: 7, fill: "currentColor" }} />}
+      {isRailway && <span style={{ fontSize: "0.7rem", lineHeight: 1 }}>⬡</span>}
+      {isRender && <Box style={{ width: 8, height: 8 }} />}
+      {service.charAt(0).toUpperCase() + service.slice(1)}
     </span>
   );
 }
@@ -67,7 +82,7 @@ function ServiceBadge({ service }: { service: "vercel" | "railway" }) {
 
 export function CommandMenu() {
   const { hasPin } = usePin();
-  const { vercelItems, railwayItems } = useDeployments();
+  const { vercelItems, railwayItems, renderItems } = useDeployments();
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
 
@@ -233,6 +248,29 @@ export function CommandMenu() {
                     <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                     <span className="cmd-mono flex-1 truncate">{d.name}</span>
                     <ServiceBadge service="railway" />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </>
+          )}
+
+          {/* ── Render deployments ── */}
+          {renderItems.length > 0 && (
+            <>
+              <CommandSeparator />
+              <CommandGroup heading="Render">
+                {renderItems.map((d) => (
+                  <CommandItem
+                    key={d.uid}
+                    value={`${d.name} render`}
+                    onSelect={() =>
+                      handleSelect(() => window.open(`https://${d.url}`, "_blank"))
+                    }
+                    className="gap-3"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                    <span className="cmd-mono flex-1 truncate">{d.name}</span>
+                    <ServiceBadge service="render" />
                   </CommandItem>
                 ))}
               </CommandGroup>

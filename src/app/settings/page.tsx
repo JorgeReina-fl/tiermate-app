@@ -320,6 +320,40 @@ export default function SettingsPage() {
                         </PopoverContent>
                       </Popover>
                     )}
+                    {service.id === "render" && (
+                      <Popover>
+                        <PopoverTrigger className="text-muted-foreground hover:text-foreground outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-full cursor-help">
+                          <CircleHelp className="w-3.5 h-3.5" />
+                        </PopoverTrigger>
+                        <PopoverContent className="w-96 text-xs shadow-lg border-border" side="right" align="start">
+                          <h4 className="font-semibold mb-2">Acceso a Render</h4>
+                          <ol className="space-y-2.5">
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">1</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Navegación:</strong> Entra en tu Dashboard de Render, haz clic en tu <strong>Avatar</strong> (esquina superior derecha) y selecciona '<strong>Account Settings</strong>'.</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">2</span>
+                              <p className="text-muted-foreground leading-snug"><strong>API Keys:</strong> Baja hasta la sección '<strong>API Keys</strong>' (o usa el enlace directo de abajo).</p>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="flex items-center justify-center w-4 h-4 rounded-sm bg-primary/20 text-primary font-bold shrink-0 mt-0.5">3</span>
+                              <p className="text-muted-foreground leading-snug"><strong>Generar:</strong> Pulsa en '<strong>Create API Key</strong>', dale un nombre (ej. TierMate) y copia la clave generada.</p>
+                            </li>
+                          </ol>
+                          <p className="mt-3 leading-snug text-muted-foreground">Pega la clave aquí y pulsa '<strong>Actualizar Llave y Guardar</strong>' para cifrarlo localmente.</p>
+                          <a
+                            href="https://dashboard.render.com/u/settings#api-keys"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 mt-3 font-medium text-primary hover:underline underline-offset-2"
+                          >
+                            Ir a dashboard.render.com/u/settings
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   </div>
                   <div className="relative">
                     <Input

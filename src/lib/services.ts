@@ -38,7 +38,7 @@ export const SERVICES: ServiceDefinition[] = [
     tokenPlaceholder: "Paste your Render API Key…",
     tokenDocsUrl: "https://dashboard.render.com/u/settings#api-keys",
     color: "#46E3B7",
-    available: false, // coming soon
+    available: true,
   },
   {
     id: "railway",
