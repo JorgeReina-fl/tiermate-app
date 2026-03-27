@@ -106,35 +106,41 @@ export default function DashboardPage() {
         <div className="space-y-12">
           {/* ── Vercel Section ── */}
           {hasVercel && (
-            <ServiceSection
-              title="Vercel"
-              icon={<Triangle className="w-4 h-4 fill-current" />}
-              items={vercelItems}
-              isLoading={isLoadingVercel}
-              viewMode={viewMode}
-            />
+            <div id="section-vercel">
+              <ServiceSection
+                title="Vercel"
+                icon={<Triangle className="w-4 h-4 fill-current" />}
+                items={vercelItems}
+                isLoading={isLoadingVercel}
+                viewMode={viewMode}
+              />
+            </div>
           )}
 
           {/* ── Railway Section ── */}
           {hasRailway && (
-            <ServiceSection
-              title="Railway"
-              icon={<span className="text-lg font-bold">⬡</span>}
-              items={railwayItems}
-              isLoading={isLoadingRailway}
-              viewMode={viewMode}
-            />
+            <div id="section-railway">
+              <ServiceSection
+                title="Railway"
+                icon={<span className="text-lg font-bold">⬡</span>}
+                items={railwayItems}
+                isLoading={isLoadingRailway}
+                viewMode={viewMode}
+              />
+            </div>
           )}
 
           {/* ── Render Section ── */}
           {hasRender && (
-            <ServiceSection
-              title="Render"
-              icon={<Box className="w-4 h-4 text-[#46E3B7]" />}
-              items={renderItems}
-              isLoading={isLoadingRender}
-              viewMode={viewMode}
-            />
+            <div id="section-render">
+              <ServiceSection
+                title="Render"
+                icon={<Box className="w-4 h-4 text-[#46E3B7]" />}
+                items={renderItems}
+                isLoading={isLoadingRender}
+                viewMode={viewMode}
+              />
+            </div>
           )}
         </div>
 

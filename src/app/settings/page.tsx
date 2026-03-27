@@ -154,6 +154,7 @@ export default function SettingsPage() {
       </Alert>
 
       {/* Session PIN */}
+      <div id="section-security">
       <Card className="mb-6 border-primary/20 bg-primary/5">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
@@ -212,9 +213,10 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      </div>{/* /section-security */}
 
       {/* Active services */}
-      <div className="space-y-4 mb-6">
+      <div id="section-api-keys" className="space-y-4 mb-6">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
           Servicios disponibles
         </h2>
