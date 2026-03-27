@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PinProvider } from "@/components/PinContext";
+import { DeploymentsProvider } from "@/components/DeploymentsContext";
 import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -33,8 +34,10 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <PinProvider>
-          <AppShell>{children}</AppShell>
-          <Toaster richColors position="bottom-right" />
+          <DeploymentsProvider>
+            <AppShell>{children}</AppShell>
+            <Toaster richColors position="bottom-right" />
+          </DeploymentsProvider>
         </PinProvider>
       </body>
     </html>

@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
 import { toast } from "sonner";
 import { RefreshCw, Settings2, Triangle, AlertCircle, LayoutGrid, List } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
 import {
   DeploymentCard,
   DeploymentCardSkeleton,
@@ -16,10 +14,9 @@ import {
 } from "@/components/DeploymentCard";
 import { PinModal } from "@/components/PinModal";
 import { usePin } from "@/components/PinContext";
+import { useDeployments } from "@/components/DeploymentsContext";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { decryptAndRetrieve, hasStoredKey } from "@/lib/storage";
-import type { VercelDeploymentsResponse, VercelDeployment, DeploymentState } from "@/lib/vercel";
-import type { RailwayDeployment, RailwayProxyResponse } from "@/lib/railway";
+import type { VercelDeployment } from "@/lib/vercel";
 
 type FetchState<T> =
   | { status: "idle" }
@@ -27,123 +24,39 @@ type FetchState<T> =
   | { status: "success"; data: T[]; lastFetched: Date }
   | { status: "error"; message: string };
 
-/* ── Railway Status Adapter ─────────────────────────────────── */
-
-function mapRailwayStatus(status: string): DeploymentState {
-  switch (status) {
-    case "SUCCESS":
-      return "READY";
-    case "FAILED":
-    case "CRASHED":
-    case "REMOVED":
-      return "ERROR";
-    case "INITIALIZING":
-    case "BUILDING":
-    case "DEPLOYING":
-      return "BUILDING";
-    default:
-      return "QUEUED";
-  }
-}
-
-function adaptRailwayDeployment(rd: RailwayDeployment): VercelDeployment {
-  return {
-    uid: rd.id,
-    name: rd.projectName,
-    url: "railway.app", // Fallback since GQL v2 might not return the public URL easily
-    state: mapRailwayStatus(rd.status),
-    createdAt: new Date(rd.createdAt).getTime(),
-    meta: {
-      githubCommitRef: rd.environmentName, // Env name as branch
-    }
-  };
-}
-
 export default function DashboardPage() {
-  const { pin, hasPin, vercelToken, railwayToken, refreshTokens } = usePin();
-  const [vercelState, setVercelState] = useState<FetchState<VercelDeployment>>({ status: "idle" });
-  const [railwayState, setRailwayState] = useState<FetchState<VercelDeployment>>({ status: "idle" });
-  
-  const [hasVercel, setHasVercel] = useState(false);
-  const [hasRailway, setHasRailway] = useState(false);
+  const { hasPin } = usePin();
+  const {
+    vercelItems,
+    railwayItems,
+    isLoadingVercel,
+    isLoadingRailway,
+    hasVercel,
+    hasRailway,
+    refresh,
+  } = useDeployments();
+
   const [isMounted, setIsMounted] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // Populate token existance + signal mount after hydration
   useEffect(() => {
-    setHasVercel(hasStoredKey("vercel"));
-    setHasRailway(hasStoredKey("railway"));
     setIsMounted(true);
   }, []);
 
-  const fetchVercel = useCallback(async (token: string) => {
-    setVercelState({ status: "loading" });
-    try {
-      const res = await fetch("/api/proxy/vercel", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(`Vercel error ${res.status}`);
-      const data: VercelDeploymentsResponse = await res.json();
-      setVercelState({
-        status: "success",
-        data: data.deployments ?? [],
-        lastFetched: new Date(),
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Error Vercel";
-      setVercelState({ status: "error", message });
-    }
-  }, []);
+  // Derive FetchState-like objects from context for backward-compat with ServiceSection
+  const vercelState: FetchState<VercelDeployment> = isLoadingVercel
+    ? { status: "loading" }
+    : vercelItems.length > 0
+    ? { status: "success", data: vercelItems, lastFetched: new Date() }
+    : { status: "idle" };
 
-  const fetchRailway = useCallback(async (token: string) => {
-    setRailwayState({ status: "loading" });
-    try {
-      const res = await fetch("/api/railway", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(`Railway error ${res.status}`);
-      const data: RailwayProxyResponse = await res.json();
-      setRailwayState({
-        status: "success",
-        data: data.deployments.map(adaptRailwayDeployment),
-        lastFetched: new Date(),
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Error Railway";
-      setRailwayState({ status: "error", message });
-    }
-  }, []);
+  const railwayState: FetchState<VercelDeployment> = isLoadingRailway
+    ? { status: "loading" }
+    : railwayItems.length > 0
+    ? { status: "success", data: railwayItems, lastFetched: new Date() }
+    : { status: "idle" };
 
-  const fetchAll = useCallback(async () => {
-    if (!hasPin) {
-      toast.warning("Introduce tu PIN de sesión para descifrar tus tokens.");
-      return;
-    }
-
-    const vToken = decryptAndRetrieve("vercel", pin);
-    const rToken = decryptAndRetrieve("railway", pin);
-
-    if (!vToken && !rToken) {
-      toast.error("No se pudo descifrar ningún token. ¿PIN correcto?");
-      return;
-    }
-
-    const promises = [];
-    if (vToken) promises.push(fetchVercel(vToken));
-    if (rToken) promises.push(fetchRailway(rToken));
-
-    await Promise.all(promises);
-  }, [pin, hasPin, fetchVercel, fetchRailway]);
-
-  // Auto-fetch
-  useEffect(() => {
-    if (isMounted && hasPin && (hasVercel || hasRailway) && vercelState.status === "idle" && railwayState.status === "idle") {
-      fetchAll();
-    }
-  }, [isMounted, hasPin, hasVercel, hasRailway, vercelState.status, railwayState.status, fetchAll]);
-
-  const isLoading = vercelState.status === "loading" || railwayState.status === "loading";
+  const isLoading = isLoadingVercel || isLoadingRailway;
   const hasSomeToken = hasVercel || hasRailway;
 
   return (
@@ -171,7 +84,7 @@ export default function DashboardPage() {
           <Button
             size="sm"
             variant="outline"
-            onClick={fetchAll}
+            onClick={refresh}
             disabled={isLoading || !hasPin || !hasSomeToken}
             className="gap-2"
           >
@@ -189,7 +102,7 @@ export default function DashboardPage() {
         hasToken={hasVercel}
         hasPin={hasPin}
         viewMode={viewMode}
-        onRetry={fetchAll}
+        onRetry={refresh}
         isMounted={isMounted}
       />
 
@@ -203,7 +116,7 @@ export default function DashboardPage() {
             hasToken={hasRailway}
             hasPin={hasPin}
             viewMode={viewMode}
-            onRetry={fetchAll}
+            onRetry={refresh}
             isMounted={isMounted}
           />
         </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Settings, Shield } from "lucide-react";
+import { CommandMenu } from "@/components/CommandMenu";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -49,9 +50,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-border">
+        <div className="px-5 py-4 border-t border-border space-y-2">
           <p className="text-[11px] text-muted-foreground leading-snug">
             Tus claves se guardan cifradas en tu navegador. El servidor nunca las ve.
+          </p>
+          <p className="text-[10px] text-muted-foreground/60 font-mono">
+            <kbd className="inline-flex items-center border border-border rounded px-1 py-0.5 text-[9px] mr-1">⌘K</kbd>
+            Paleta de comandos
           </p>
         </div>
       </aside>
@@ -60,6 +65,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 flex flex-col overflow-auto">
         {children}
       </main>
+
+      {/* Global command palette — always present, gated by PIN */}
+      <CommandMenu />
     </div>
   );
 }
