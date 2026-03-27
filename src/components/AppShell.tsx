@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Settings, Shield } from "lucide-react";
+import { Shield, LayoutDashboard, Settings } from "lucide-react";
 import { CommandMenu } from "@/components/CommandMenu";
+import { Kbd } from "@/components/ui/kbd";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -54,8 +55,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <p className="text-[11px] text-muted-foreground leading-snug">
             Tus claves se guardan cifradas en tu navegador. El servidor nunca las ve.
           </p>
-          <p className="text-[10px] text-muted-foreground/60 font-mono">
-            <kbd className="inline-flex items-center border border-border rounded px-1 py-0.5 text-[9px] mr-1">⌘K</kbd>
+          <p className="text-[10px] text-muted-foreground/60 font-mono flex items-center gap-1.5">
+            <Kbd className="px-1 py-0.5" />
             Paleta de comandos
           </p>
         </div>

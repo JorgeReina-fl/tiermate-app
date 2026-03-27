@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { RefreshCw, Settings2, Triangle, AlertCircle, LayoutGrid, List, Shield, ServerOff, Database, Key } from "lucide-react";
+import { RefreshCw, Settings2, Triangle, AlertCircle, LayoutGrid, List, Shield, ServerOff, Database, Key, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { VercelDeployment } from "@/lib/vercel";
 import { WelcomeTour } from "@/components/WelcomeTour";
 import Link from "next/link";
+import { Kbd } from "@/components/ui/kbd";
 
 type FetchState<T> =
   | { status: "idle" }
@@ -73,7 +74,17 @@ export default function DashboardPage() {
             Últimos despliegues de tus servicios
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* ── Search Trigger ── */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+            className="flex items-center gap-2 px-3 h-9 bg-[#16191F] hover:bg-[#1c1f26] border border-border/50 rounded-[0.3rem] text-sm text-foreground/50 transition-colors shrink-0 group"
+          >
+            <Search className="w-4 h-4 text-muted-foreground group-hover:text-foreground/70 transition-colors" />
+            <span className="hidden sm:inline-block">Buscar...</span>
+            <Kbd className="hidden sm:inline-flex ml-2 sm:ml-4" />
+          </button>
+
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "grid" | "list")}>
             <TabsList className="h-9">
               <TabsTrigger value="grid" className="px-2" title="Vista de tarjetas">

@@ -71,7 +71,7 @@ export function CommandMenu() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
 
-  /* Global keyboard listener */
+  /* Global keyboard listener & Custom Event listener */
   React.useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (!hasPin) return; // ← Zero-knowledge guard
@@ -80,8 +80,18 @@ export function CommandMenu() {
         setOpen((prev) => !prev);
       }
     }
+    
+    function onCustomOpen() {
+      if (hasPin) setOpen(true);
+    }
+    
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("open-command-palette", onCustomOpen);
+    
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("open-command-palette", onCustomOpen);
+    };
   }, [hasPin]);
 
   /* Close when session is locked */
